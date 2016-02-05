@@ -1,11 +1,12 @@
-import json  
+import json
 import os
 import time
 import sys
 
-from keystoneclient import session as ksc_session  
-from keystoneclient.auth.identity import v3  
+from keystoneclient import session as ksc_session
+from keystoneclient.auth.identity import v3
 from keystoneclient.v3 import client as keystone_v3
+from keystoneclient.v3.contrib.federation.saml import SamlManager
 
 try:
     OS_AUTH_URL = os.environ['OS_AUTH_URL']
@@ -17,7 +18,7 @@ except KeyError as e:
 
 sp_ip = sys.argv[1]
 
-class K2KClient(object):  
+class K2KClient(object):
     def __init__(self):
         self.sp_id = 'keystone-sp'
         self.sp_ip = sp_ip
@@ -33,53 +34,25 @@ class K2KClient(object):
                            project_id=self.project_id)
         self.session = ksc_session.Session(auth=auth, verify=False)
         self.token = self.session.auth.get_token(self.session)
-
-    def _generate_token_json(self):
-        return {
-            "auth": {
-                "identity": {
-                    "methods": [
-                        "token"
-                    ],
-                    "token": {
-                        "id": self.token
-                    }
-                },
-                "scope": {
-                    "service_provider": {
-                        "id": self.sp_id
-                    }
-                }
-            }
-        }
+        self.client = keystone_v3.Client(session=self.session)
 
     def _check_response(self, response):
         if not response.ok:
             raise Exception("Something went wrong, %s" % response.__dict__)
 
     def get_saml2_ecp_assertion(self):
-        token = json.dumps(self._generate_token_json())
-        url = self.auth_url + '/auth/OS-FEDERATION/saml2/ecp'
-        r = self.session.post(url=url, data=token, verify=False)
-        self._check_response(r)
-        self.assertion = str(r.text)
-
-    def _get_sp(self):
-        url = self.auth_url + '/OS-FEDERATION/service_providers/' + self.sp_id
-        r = self.session.get(url=url, verify=False)
-        self._check_response(r)
-        sp = json.loads(r.text)[u'service_provider']
-        return sp
+        sm = SamlManager(self.client)
+        self.assertion = sm.create_ecp_assertion(self.sp_id, self.token)
 
     def _handle_http_302_ecp_redirect(self, response, location, **kwargs):
         return self.session.get(location, authenticated=False, **kwargs)
 
     def exchange_assertion(self):
         """Send assertion to a Keystone SP and get token."""
-        sp = self._get_sp()
+	sp = self.client.federation.service_providers.get(self.sp_id)
 
         r = self.session.post(
-            sp[u'sp_url'],
+            sp.sp_url,
             headers={'Content-Type': 'application/vnd.paos+xml'},
             data=self.assertion,
             authenticated=False,
@@ -87,7 +60,7 @@ class K2KClient(object):
 
         self._check_response(r)
 
-        r = self._handle_http_302_ecp_redirect(r, sp[u'auth_url'],
+        r = self._handle_http_302_ecp_redirect(r, sp.auth_url,
                                                headers={'Content-Type':
                                                'application/vnd.paos+xml'})
         self.fed_token_id = r.headers['X-Subject-Token']
@@ -135,7 +108,7 @@ class K2KClient(object):
         self.scoped_token_id = r.headers['X-Subject-Token']
         self.scoped_token_ref = str(r.text)
 
-def main():  
+def main():
     client = K2KClient()
     client.v3_authenticate()
     client.get_saml2_ecp_assertion()
@@ -150,14 +123,13 @@ def main():
     client.scope_token(project_id=project_id)
     print('Scoped token id: %s' % client.scoped_token_id)
 #    client.scoped_auth_ref = client.r.json()
-#    client.scoped_auth = v3.Token(auth_url="http://128.52.183.216:5000/v3", 
+#    client.scoped_auth = v3.Token(auth_url="http://128.52.183.216:5000/v3",
 #                                token=client.scoped_token_id)
 #    client.scoped_auth.auth_ref = client.scoped_auth_ref
 #    client.scoped_session = ksc_session.Session(auth=client.scoped_auth, verify=False)
-#    client.unscoped_auth = v3.Token(auth_url="http://128.52.183.216:5000/v3", 
+#    client.unscoped_auth = v3.Token(auth_url="http://128.52.183.216:5000/v3",
 #                                token=client.fed_token_id)
 #    client.unscoped_session = ksc_session.Session(auth=client.unscoped_auth, verify=False)
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
     main()
-
