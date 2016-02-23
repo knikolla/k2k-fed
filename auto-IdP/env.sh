@@ -6,6 +6,7 @@ echo "IDP IP is ${IDP_IP}"
 sudo apt-get install -y xmlsec1
 sudo pip install pysaml2
 sudo pip install configparser
+sudo pip install --upgrade keystoneauth1
 
 python insert.py $IDP_IP
 python modify_novaconf.py
