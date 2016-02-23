@@ -18,7 +18,7 @@ def client_for_admin_user():
     auth = v3.Password(auth_url=OS_AUTH_URL,
                        user_id=OS_USER_ID,
                        password=OS_PASSWORD,
-                       project_id=OS_PROJECT_ID
+                       project_id=OS_PROJECT_ID)
     session = ksc_session.Session(auth=auth)
     return keystone_v3.Client(session=session)
 

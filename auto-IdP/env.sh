@@ -5,8 +5,10 @@ echo "IDP IP is ${IDP_IP}"
 
 sudo apt-get install -y xmlsec1
 sudo pip install pysaml2
+sudo pip install configparser
 
 python insert.py $IDP_IP
+python modify_novaconf.py
 
 sudo keystone-manage pki_setup --keystone-user ubuntu --keystone-group ubuntu
 sudo chown -R ubuntu:ubuntu /etc/keystone/ssl

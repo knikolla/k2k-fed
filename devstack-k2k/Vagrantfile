@@ -70,7 +70,7 @@ Vagrant.configure(2) do |config|
   config.hostmanager.enabled = true
 
   # define Identity Provider (IDP)
-  config.vm.define "k2k-idp" do |devstack|
+  config.vm.define "k2k-idp4" do |devstack|
     devstack.ssh.username = 'ubuntu'
     devstack.ssh.private_key_path = private_key_path
 
@@ -81,7 +81,7 @@ Vagrant.configure(2) do |config|
       os.password             = ENV['OS_PASSWORD']
       os.tenant_name          = ENV['OS_TENANT_NAME']
       os.flavor               = flavor
-      os.server_name          = "k2k-idp"
+      os.server_name          = "k2k-idp4"
       os.image                = image_id
       os.endpoint_type        = 'publicURL'
       os.sync_method          = 'rsync'
@@ -92,7 +92,7 @@ Vagrant.configure(2) do |config|
       cat /dev/null > /etc/hosts
     SHELL
 
-    devstack.vm.hostname = "k2k-idp"
+    devstack.vm.hostname = "k2k-idp4"
     devstack.vm.provision :hostmanager
 
     # shell command to update vm and install devstack
@@ -107,7 +107,7 @@ Vagrant.configure(2) do |config|
   end
 
   # define Service Provider (SP)
-  config.vm.define "k2k-sp" do |devstack|
+  config.vm.define "k2k-sp4" do |devstack|
     devstack.ssh.username = 'ubuntu'
     devstack.ssh.private_key_path = private_key_path
 
@@ -118,7 +118,7 @@ Vagrant.configure(2) do |config|
       os.password             = ENV['OS_PASSWORD']
       os.tenant_name          = ENV['OS_TENANT_NAME']
       os.flavor               = flavor
-      os.server_name          = "k2k-sp"
+      os.server_name          = "k2k-sp4"
       os.image                = image_id
       os.endpoint_type        = 'publicURL'
       os.sync_method          = 'rsync'
@@ -129,7 +129,7 @@ Vagrant.configure(2) do |config|
       cat /dev/null > /etc/hosts
     SHELL
 
-    devstack.vm.hostname = "k2k-sp"
+    devstack.vm.hostname = "k2k-sp4"
     devstack.vm.provision :hostmanager
 
     # shell command to update vm and install devstack

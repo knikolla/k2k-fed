@@ -1,12 +1,11 @@
-import sys, fileinput, re
+# Insert auth_uri in [cinder] in nova.conf
+import configparser
 
-def modify_sp_keyconf():  
-    fh=fileinput.input('/etc/keystone/keystone.conf',inplace=True)  
-    for line in fh:  
-        repl_auth=line + 'methods = external,password,token,oauth1,saml2' + '\n' + 'saml2 = keystone.auth.plugins.mapped.Mapped'  
-        line=re.sub('\[auth\]', repl_auth, line)  
-        sys.stdout.write(line) 
-    fh.close()  
+config = configparser.ConfigParser()
+config.read('/etc/keystone/keystone.conf')
 
-modify_sp_keyconf()
+config['auth']['methods'] = 'external,password,token,oauth1,saml2'
+config['auth']['saml2'] = 'keystone.auth.plugins.mapped.Mapped'
 
+with open('/etc/keystone/keystone.conf', 'w') as configfile:
+    config.write(configfile)

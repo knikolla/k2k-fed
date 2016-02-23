@@ -1,23 +1,11 @@
-import sys, fileinput, re
+# Insert Auth_uri in [cinder]
+import configparser
 
-def modify_novaconf():  
-    keystone_section = "[keystone_authtoken]"
-    cinder_section = "[cinder]"
-    search_text = "auth_uri"
-    repl_text = ""
-    found_keystone = False
-    fh=fileinput.input('/etc/nova/nova.conf',inplace=True)  
-    for line in fh:  
-        if keystone_section in line:
-            found_keystone = True
+config = configparser.ConfigParser()
+config.read('/etc/nova/nova.conf')
 
-        if search_text in line and found_keystone: 
-            repl_text = line
-        
-        if repl_text != "":
-            if cinder_section in line:
-                line = line + repl_text
-        sys.stdout.write(line) 
-    fh.close()  
+config['cinder']['auth_uri'] = config['keystone_authtoken']['auth_url']
 
-modify_novaconf()
+with open('/etc/nova/nova.conf', 'w') as configfile:
+    config.write(configfile)
+

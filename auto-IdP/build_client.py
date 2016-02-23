@@ -1,7 +1,7 @@
 import os
 
-from keystoneclient import session as ksc_session  
-from keystoneclient.auth.identity import v3  
+from keystoneclient import session as ksc_session
+from keystoneclient.auth.identity import v3
 from keystoneclient.v3 import client as keystone_v3
 
 try:
@@ -9,7 +9,7 @@ try:
     OS_PROJECT_ID = os.environ['OS_PROJECT_ID']
     OS_USER_ID = os.environ['OS_USER_ID']
     OS_PASSWORD = os.environ['OS_PASSWORD']
-except KeyError as e:  
+except KeyError as e:
     raise SystemExit('%s environment variable not set.' % e)
 
 def client_for_admin_user():

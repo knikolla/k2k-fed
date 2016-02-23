@@ -1,7 +1,7 @@
 import os, sys
 
-from keystoneclient import session as ksc_session  
-from keystoneclient.auth.identity import v3  
+from keystoneclient import session as ksc_session
+from keystoneclient.auth.identity import v3
 from keystoneclient.v3 import client as keystone_v3
 
 idp_ip = sys.argv[1]
@@ -14,7 +14,7 @@ try:
 except KeyError as e:
     raise SystemExit('%s environment variable not set.' % e)
 
-def client_for_admin_user():  
+def client_for_admin_user():
     auth = v3.Password(auth_url=OS_AUTH_URL,
                        user_id=OS_USER_ID,
                        password=OS_PASSWORD,
@@ -23,60 +23,60 @@ def client_for_admin_user():
     return keystone_v3.Client(session=session)
 
 # Used to execute all admin actions
-client = client_for_admin_user()  
+client = client_for_admin_user()
 print "print user list to varify client authentication and authorization"
 print client.users.list()
 
-def create_domain(client, name):  
+def create_domain(client, name):
     try:
          d = client.domains.create(name=name)
     except:
          d = client.domains.find(name=name)
     return d
 
-def create_group(client, name, domain):  
+def create_group(client, name, domain):
     try:
          g = client.groups.create(name=name, domain=domain)
     except:
          g = client.groups.find(name=name)
     return g
 
-def create_role(client, name):  
+def create_role(client, name):
     try:
         r = client.roles.create(name=name)
     except:
         r = client.roles.find(name=name)
     return r
 
-def create_project(client, name):  
+def create_project(client, name):
     try:
         r = client.projects.create(name=name, domain='default')
     except:
         r = client.projects.find(name=name, domain='default')
     return r
 
-print('\nCreating domain1')  
+print('\nCreating domain1')
 domain1 = create_domain(client, 'domain1')
 
-print('\nCreating group1')  
+print('\nCreating group1')
 group1 = create_group(client, 'group1', domain1)
 
 print('\nCreating project fed-demo')
 #project1 = create_project(client, 'fed-demo')
 admin_project = client.projects.find(name='admin')
 
-print('\nCreating role Member')  
+print('\nCreating role Member')
 role1 = create_role(client, '_member_')
 
-print('\nGrant role Member to group1 in domain1')  
+print('\nGrant role Member to group1 in domain1')
 client.roles.grant(role1, group=group1, domain=domain1)
 #client.roles.grant(role1, group=group1, project=project1)
 client.roles.grant(role1, group=group1, project=admin_project)
 
-print('\nList group1 role assignments')  
-client.role_assignments.list(group=group1) 
+print('\nList group1 role assignments')
+client.role_assignments.list(group=group1)
 
-def create_mapping(client, mapping_id, rules):  
+def create_mapping(client, mapping_id, rules):
     try:
         m = client.federation.mappings.create(
             mapping_id=mapping_id, rules=rules)
@@ -85,8 +85,8 @@ def create_mapping(client, mapping_id, rules):
             mapping=mapping_id, rules=rules)
     return m
 
-print('\nCreating mapping')  
-rules = [  
+print('\nCreating mapping')
+rules = [
 {
     "local": [
         {
@@ -113,9 +113,9 @@ rules = [
 }
 ]
 
-mapping1 = create_mapping(client, mapping_id='keystone-idp-mapping', rules=rules)  
+mapping1 = create_mapping(client, mapping_id='keystone-idp-mapping', rules=rules)
 
-def create_idp(client, id, remote_id):  
+def create_idp(client, id, remote_id):
     idp_ref = {'id': id,
                'remote_ids': [remote_id],
                'enabled': True}
@@ -125,7 +125,7 @@ def create_idp(client, id, remote_id):
         i = client.federation.identity_providers.find(id=id)
     return i
 
-def create_protocol(client, protocol_id, idp, mapping):  
+def create_protocol(client, protocol_id, idp, mapping):
     try:
         p = client.federation.protocols.create(protocol_id=protocol_id,
                                                identity_provider=idp,
@@ -135,10 +135,10 @@ def create_protocol(client, protocol_id, idp, mapping):
     return p
 
 
-print('\nRegister keystone-idp')  
-idp1 = create_idp(client, id='keystone-idp',  
-                  remote_id='http://' + idp_ip + ':5000/v3/OS-FEDERATION/saml2/idp')
+print('\nRegister keystone-idp')
+idp1 = create_idp(client, id='keystone-idp',
+                  remote_id='http://' + idp_ip + ':35357/v3/OS-FEDERATION/saml2/idp')
 
-print('\nRegister protocol')  
-protocol1 = create_protocol(client, protocol_id='saml2', idp=idp1,  
+print('\nRegister protocol')
+protocol1 = create_protocol(client, protocol_id='saml2', idp=idp1,
                             mapping=mapping1)

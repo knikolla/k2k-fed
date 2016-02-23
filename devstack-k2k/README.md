@@ -1,12 +1,12 @@
 ## Overview
 
-This vagrant script automatically spins up 2 vms named **k2k-sp** and **k2k-idp** on an OpenStack cloud and set up devstack kilo 
+This vagrant script automatically spins up 2 vms named **k2k-sp** and **k2k-idp** on an OpenStack cloud and set up devstack kilo
 
 This recipe installs devstack kilo (master branch) with minimal configuration
 
 ## How to use?
 
-### 1. Set up vagrant 
+### 1. Set up vagrant
 
 1) Install vagrant
 
@@ -28,21 +28,21 @@ Please change the following parameters in `Vagrantfile` according to your OpenSt
 
 ### 3. source your openrc file
 
-You can download your openrc file on horizon under Access and Security -> API access -> Download OpenStack RC File 
+You can download your openrc file on horizon under Access and Security -> API access -> Download OpenStack RC File
 
-once you download your openrc file, simple source it by running: 
+once you download your openrc file, simple source it by running:
 
-`source name_of_your_rcfile` 
+`source name_of_your_rcfile`
 
 on the terminal
 
 ### 4. Spin up vms, deploy devstack, and set up K2K
- 
-simply run 
+
+simply run
 
 ```
 vagrant up --no-provision
 vagrant provision
-``` 
+```
 
 

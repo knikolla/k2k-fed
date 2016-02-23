@@ -8,7 +8,8 @@ sudo chown -R ubuntu:ubuntu /etc/keystone/ssl
 echo "install shibboleth"
 sudo apt-get install -y libapache2-mod-shib2
 echo "run insert.py to setup etc keystone.conf and apache2 keystone.conf"
-python insert_etc_keyconf.py
+sudo pip install configparser
+sudo python insert_etc_keyconf.py
 sudo python insert_apache_keyconf.py
 
 sudo apt-get install libxml2-dev libxslt-dev python-dev
